@@ -179,8 +179,9 @@ class AlliedPiece extends Piece {
 }
 
 class PeonBlanco extends AlliedPiece {
+  static cost = 20;
   constructor(x, y) {
-    super(x, y, 20, 'PBlanco.png');
+    super(x, y, PeonBlanco.cost, 'PBlanco.png');
   }
 
   getPosicionesCapturables() {
@@ -192,8 +193,9 @@ class PeonBlanco extends AlliedPiece {
 }
 
 class CaballoBlanco extends AlliedPiece {
+  static cost = 50;
   constructor(x, y) {
-    super(x, y, 50, 'CBlanco.png');
+    super(x, y, CaballoBlanco.cost, 'CBlanco.png');
   }
 
   getPosicionesCapturables() {
@@ -288,8 +290,9 @@ class Proyectil extends AlliedPiece {
 }
 
 class TorreBlanca extends Proyectil {
+  static cost = 100;
   constructor(x, y) {
-    super(x, y, 100, 'TBlanco.png', 125, false);
+    super(x, y, TorreBlanca.cost, 'TBlanco.png', 125, false);
   }
 
   getPosicionesCapturables() {
@@ -301,8 +304,9 @@ class TorreBlanca extends Proyectil {
 }
 
 class AlfilBlanco extends Proyectil {
+  static cost = 70;
   constructor(x, y) {
-    super(x, y, 70, 'ABlanco.png', 250, true);
+    super(x, y, AlfilBlanco.cost, 'ABlanco.png', 250, true);
   }
 
   getPosicionesCapturables() {
@@ -320,7 +324,6 @@ class EnemyPiece extends Piece {
 
     this.jaqueCounter = JAQUE_TICKS_LIMIT;
     this.jaqueVisual = null;
-    this.direccionesRandomizadas = [];
   }
 
   getPosicionesAvanzables() {
@@ -331,17 +334,8 @@ class EnemyPiece extends Piece {
     return this.getPosicionesAvanzables();
   }
 
-  actualizarDirecciones() {
-    const dirs = this.getPosicionesAvanzables();
-    this.direccionesRandomizadas = dirs.sort(() => Math.random() - 0.5);
-  }
-
   siguientePosicion() {
-    if (this.direccionesRandomizadas.length === 0) {
-      this.actualizarDirecciones();
-    }
-
-    const candidatos = this.direccionesRandomizadas.filter(pos => this.posicionValida(pos.x, pos.y));
+    const candidatos = this.getPosicionesAvanzables().filter(pos => this.posicionValida(pos.x, pos.y));
     return candidatos.length === 0 ? { x: this.x, y: this.y } : candidatos[Math.floor(Math.random() * candidatos.length)];
   }
 
@@ -352,14 +346,24 @@ class EnemyPiece extends Piece {
       this.jaqueCounter--;
       showSpeechBubble(this, `contador ${this.jaqueCounter}`);
       this.intentarAñadirJaque();
-    } else {
-      const pos = this.siguientePosicion();
-      this.mover(pos.x, pos.y);
-      this.actualizarDirecciones();
-      this.quitarJaqueVisual();
+
+      const captured = this.intentarCapturar();
+      if (!captured) {
+        this.capturarRey();
+      }
+      return;
     }
 
-    this.intentarCapturar();
+    const captured = this.intentarCapturar();
+    if (captured) {
+      this.quitarJaqueVisual();
+      this.capturarRey();
+      return;
+    }
+
+    const pos = this.siguientePosicion();
+    this.mover(pos.x, pos.y);
+    this.quitarJaqueVisual();
     this.capturarRey();
   }
 
@@ -399,33 +403,25 @@ class EnemyPiece extends Piece {
   }
 
   intentarCapturar() {
-    if (this.muerto) return;
+    if (this.muerto) return false;
 
     const targets = this.getPosicionesCapturables();
     for (let target of targets) {
       const ally = gameState.allies.find(a => a.x === target.x && a.y === target.y && !a.muerto);
       if (ally) {
+        this.mover(target.x, target.y);
         ally.desaparecer(250);
         soundManager.play("eat");
-
-        const bonus = this.valor + Math.floor(ally.valor / 2);
-        addCredits(bonus);
-        addScore(bonus);
-        showFloatingText(ally.x, ally.y, `+$${bonus}`, "recurso-gain");
-        return;
+        return true;
       }
     }
+    return false;
   }
 
   capturarRey() {
     if (this.y === 0 && !this.muerto) {
-      if (gameState.king.x === this.x) {
-        perderVidaRey();
-        this.desaparecer(500);
-      } else {
-        perderVidaRey();
-        this.desaparecer(500);
-      }
+      perderVidaRey();
+      this.desaparecer(500);
     }
   }
 

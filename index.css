@@ -13,8 +13,8 @@
   --glass-bg: rgba(29, 15, 10, 0.75);
   --glass-border: rgba(223, 178, 52, 0.3);
 
-  --font-serif: 'Cinzel', Georgia, serif;
-  --font-sans: 'Outfit', Helvetica, sans-serif;
+  --font-serif: 'Press Start 2P', monospace;
+  --font-sans: 'Pixelify Sans', 'VT323', monospace;
 
   --cell-size: 80px;
   --board-width: calc(var(--cell-size) * 7);
@@ -74,8 +74,8 @@ body::before {
 }
 
 .game-main-title {
-  font-family: 'Cinzel Decorative', var(--font-serif);
-  font-size: 2.2em;
+  font-family: var(--font-serif);
+  font-size: 1.65em;
   font-weight: 700;
   color: var(--gold);
   letter-spacing: 5px;
@@ -895,8 +895,8 @@ body::before {
 }
 
 .deck-volume-text {
-  font-family: 'Cinzel', serif;
-  font-size: 0.85rem;
+  font-family: var(--font-serif);
+  font-size: 0.62rem;
   color: var(--gold);
   min-width: 38px;
   text-align: right;

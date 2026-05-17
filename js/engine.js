@@ -71,14 +71,10 @@ function intentarColocarDefensa(ClasePieza) {
   if (!gameState.isPlaying || gameState.isTutorialActive || gameState.isGameOver) return;
 
   const placePos = { x: gameState.king.x, y: gameState.king.y + 1 };
-
-  const mock = new ClasePieza(placePos.x, placePos.y);
-  const cost = mock.valor;
-
-  if (mock.dom && mock.dom.parentNode) mock.dom.parentNode.removeChild(mock.dom);
+  const cost = ClasePieza.cost;
 
   if (gameState.credits < cost && !gameState.cheats.infinityAmmo) {
-    showFloatingText(gameState.king.x, gameState.king.y, "CRÉDITOS INSUFICIENTES", "life-loss");
+    showFloatingText(gameState.king.x, gameState.king.y, "FONDOS INSUFICIENTES", "life-loss");
     return;
   }
 
@@ -108,12 +104,10 @@ function intentarColocarDefensa(ClasePieza) {
 function dispararProyectil(ClaseProyectil) {
   if (!gameState.isPlaying || gameState.isTutorialActive || gameState.isGameOver) return;
 
-  const mock = new ClaseProyectil(gameState.king.x, gameState.king.y);
-  const cost = mock.valor;
-  if (mock.dom && mock.dom.parentNode) mock.dom.parentNode.removeChild(mock.dom);
+  const cost = ClaseProyectil.cost;
 
   if (gameState.credits < cost && !gameState.cheats.infinityAmmo) {
-    showFloatingText(gameState.king.x, gameState.king.y, "CRÉDITOS INSUFICIENTES", "life-loss");
+    showFloatingText(gameState.king.x, gameState.king.y, "FONDOS INSUFICIENTES", "life-loss");
     return;
   }
 
