@@ -2,6 +2,8 @@ function initGame() {
   bindKeyboardEvents();
   bindUIButtons();
 
+  updateMuteDeckState();
+
   displayLeaderboardData();
 
   setTimeout(() => {

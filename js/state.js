@@ -15,7 +15,7 @@ let gameState = {
   isGameOver: false,
   isTransitionActive: false,
   isLeaderboardVisible: false,
-  isSoundMuted: false,
+  isSoundMuted: localStorage.getItem('chess_td_muted') === 'true',
 
   king: {
     x: 2,

@@ -5,7 +5,7 @@ const soundManager = {
     eat: document.getElementById('audioEat'),
     hurt: document.getElementById('audioHurt')
   },
-  volume: 0.5,
+  volume: parseFloat(localStorage.getItem('chess_td_volume') ?? '0.5'),
   isPlayingFondo: false,
 
   playFondo() {
@@ -33,6 +33,7 @@ const soundManager = {
       gameState.isSoundMuted = false;
       this.playFondo();
     }
+    localStorage.setItem('chess_td_muted', gameState.isSoundMuted);
     updateMuteDeckState();
   },
 
@@ -49,6 +50,7 @@ const soundManager = {
   setVolume(newVol) {
     this.volume = Math.max(0, Math.min(1, newVol));
     this.elements.fondo.volume = this.volume;
+    localStorage.setItem('chess_td_volume', this.volume);
 
     const slider = document.getElementById('deckVolumeSlider');
     const text = document.getElementById('deckVolumeText');
