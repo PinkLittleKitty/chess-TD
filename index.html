@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Last Pawn Standing</title>
+  <link rel="icon" type="image/png" href="assets/PBlanco.png">
+
+  <meta name="description"
+    content="Una variante de ajedrez en tiempo real con mecánicas de Tower Defense. Controla al Rey blanco, compra piezas aliadas, dispara proyectiles y defiende tu tablero contra las oleadas de peones negros.">
+  <meta name="keywords"
+    content="ajedrez, tower defense, real time chess, mini chess, javascript, html5 game, static game, github pages">
+  <meta name="author" content="Santiago Fisela, Ivana Condori, Gabriel Kakazu, Thomas Correa">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-crest">♔</div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Cargando...</div>
+  </div>
+
+  <div class="game-control-deck">
+    <button id="deckMuteBtn" class="deck-btn" title="Mutear Música (M)">
+      <i id="deckMuteIcon" class="fa-solid fa-volume-high deck-icon"></i>
+    </button>
+
+    <div class="deck-volume-slider-container">
+      <input type="range" id="deckVolumeSlider" min="0" max="100" value="50" class="deck-volume-slider"
+        title="Ajustar Volumen (+/-)">
+      <span id="deckVolumeText" class="deck-volume-text">50%</span>
+    </div>
+
+    <div class="deck-divider"></div>
+
+    <button id="deckLeaderboardBtn" class="deck-btn" title="Tabla de Honor (L)">
+      <i class="fa-solid fa-trophy deck-icon"></i>
+    </button>
+  </div>
+
+  <div class="app-container">
+
+    <div id="game-viewport-container">
+
+      <div id="game-screen" class="game-screen-panel">
+
+        <div id="board" class="game-board">
+
+          <div id="ui-score" class="board-ui-text">0</div>
+          <div id="ui-recurso" class="board-ui-text">100</div>
+          <div id="ui-piezasRestantes" class="board-ui-text">0</div>
+          <div id="ui-oleadaActual" class="board-ui-text">1</div>
+          <div id="ui-vida" class="board-ui-text">3</div>
+
+          <div id="jaque-warning" class="jaque-warning-vignette hidden"></div>
+        </div>
+
+        <div id="main-menu-overlay" class="screen-overlay active">
+          <div class="menu-content">
+            <img src="assets/LPS-MainMenu.png" alt="Last Pawn Standing Menu" class="menu-bg-img">
+            <div class="menu-hint pulse-animation">CLIC O ENTER PARA EMPEZAR</div>
+          </div>
+        </div>
+
+        <div id="name-prompt-overlay" class="screen-overlay">
+          <div class="prompt-box text-center">
+            <h2 class="game-over-title">¡JAQUE MATE!</h2>
+            <p class="game-over-subtitle">Tu Rey ha caído en batalla.</p>
+            <div class="score-summary-card">
+              <div>Puntuación Final: <span id="final-score" class="gold-text">0</span></div>
+              <div>Oleada Alcanzada: <span id="final-wave" class="gold-text">1</span></div>
+            </div>
+
+            <div class="name-entry-form">
+              <label for="playerNameInput">Escribe tu nombre:</label>
+              <input type="text" id="playerNameInput" maxlength="20" placeholder="Tu nombre..." autocomplete="off">
+              <button id="btnSubmitScore" class="btn btn-gold">REGISTRAR SCORE &amp; REINICIAR (ENTER)</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="leaderboard-overlay" class="screen-overlay">
+          <div class="leaderboard-box text-center">
+            <button id="btnCloseLeaderboard" class="close-overlay-btn" title="Cerrar">×</button>
+            <h2 class="title-gold">TABLA DE HONOR</h2>
+            <div class="leaderboard-separator"></div>
+
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Puesto</th>
+                  <th>Héroe / Truco</th>
+                  <th>Puntos</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboard-rows">
+                <!-- Rows injected dynamically via JS -->
+              </tbody>
+            </table>
+
+            <button id="btnResetLeaderboard" class="btn btn-red btn-xs" style="margin-top: 15px;">BORRAR
+              HISTORIAL</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="controls-panel" id="controlsPanel">
+      <button class="panel-toggle" id="panelToggle" title="Colapsar Controles">
+        <span class="arrow">◀</span>
+      </button>
+
+      <div class="panel-content">
+        <h2 class="controls-title">CONTROLES</h2>
+
+        <div class="control-item">
+          <img src="assets/RBlanco.png" alt="Rey" class="piece-icon">
+          <div class="control-keys">
+            <span class="key" id="key-ArrowLeft">←</span>
+            <span class="key" id="key-ArrowRight">→</span>
+          </div>
+          <div class="control-info">
+            <span class="control-label">Mover Rey</span>
+            <span class="control-desc">Mueve al rey por la fila 1</span>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <img src="assets/PBlanco.png" alt="Peón" class="piece-icon">
+          <div class="control-keys">
+            <span class="key" id="key-1">1</span>
+          </div>
+          <div class="control-info font-serif">
+            <span class="control-label">Peón Blanco</span>
+            <span class="control-price">$20</span>
+            <span class="control-desc">Coloca en Fila 2. Captura diagonal. Corona x5.</span>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <img src="assets/CBlanco.png" alt="Caballo" class="piece-icon">
+          <div class="control-keys">
+            <span class="key" id="key-2">2</span>
+          </div>
+          <div class="control-info">
+            <span class="control-label">Caballo Blanco</span>
+            <span class="control-price">$50</span>
+            <span class="control-desc">Coloca en Fila 2. Movimiento en L hacia arriba. Corona x5.</span>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <img src="assets/ABlanco.png" alt="Alfil" class="piece-icon">
+          <div class="control-keys">
+            <span class="key" id="key-3">3</span>
+          </div>
+          <div class="control-info">
+            <span class="control-label">Disparar Alfil</span>
+            <span class="control-price">$70</span>
+            <span class="control-desc">Proyectil diagonal aleatorio. Corona div 4.</span>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <img src="assets/TBlanco.png" alt="Torre" class="piece-icon">
+          <div class="control-keys">
+            <span class="key" id="key-4">4</span>
+          </div>
+          <div class="control-info">
+            <span class="control-label">Disparar Torre</span>
+            <span class="control-price">$100</span>
+            <span class="control-desc">Proyectil vertical veloz. Corona div 4.</span>
+          </div>
+        </div>
+
+        <div class="control-item restart">
+          <div class="control-info text-center">
+            <span class="control-label" style="display:block; margin-bottom: 5px;">Reinicio Rápido</span>
+            <div class="control-keys" style="justify-content: center; margin-bottom: 10px;">
+              <span class="key" id="key-Alt">Alt</span>
+            </div>
+            <span class="control-desc">Presiona <strong>Alt</strong> para reiniciar</span>
+          </div>
+        </div>
+
+        <div class="control-item restart" style="border-top: none; padding-top: 0;">
+          <div class="control-info text-center">
+            <span class="control-label" style="display:block; margin-bottom: 5px;">Música &amp; Leaderboard</span>
+            <div style="font-size:0.8em; opacity: 0.8; line-height: 1.4;">
+              <div><strong>M</strong>: Silenciar música</div>
+              <div><strong>+ / -</strong>: Regular volumen</div>
+              <div><strong>L</strong>: Tabla de puntos</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <audio id="audioFondo" loop preload="auto">
+    <source src="assets/sonidoDeFondo.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audioGameOver" preload="auto">
+    <source src="assets/game_over.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audioEat" preload="auto">
+    <source src="assets/pieceEat.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="audioHurt" preload="auto">
+    <source src="assets/KingHurt.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="js/state.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/pieces.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
