@@ -49,6 +49,17 @@ class Piece {
     if (this.muerto) return;
     this.muerto = true;
 
+    if (this.comboTimerId) {
+      clearTimeout(this.comboTimerId);
+      this.comboTimerId = null;
+    }
+
+    if (this.color === 'blanco') {
+      gameState.allies = gameState.allies.filter(a => a !== this);
+    } else {
+      gameState.enemies = gameState.enemies.filter(e => e !== this);
+    }
+
     if (gameState.cheats.sangre) {
       spawnExplosionParticles(this.x, this.y, '#e74c3c');
       if (this.dom) this.dom.src = 'assets/Blood.gif';
@@ -285,7 +296,6 @@ class Proyectil extends AlliedPiece {
   desaparecer(timeMs) {
     clearInterval(this.projectileTimerId);
     super.desaparecer(timeMs);
-    gameState.allies = gameState.allies.filter(a => a !== this);
   }
 }
 
@@ -428,7 +438,6 @@ class EnemyPiece extends Piece {
   desaparecer(timeMs) {
     this.quitarJaqueVisual();
     super.desaparecer(timeMs);
-    gameState.enemies = gameState.enemies.filter(e => e !== this);
   }
 }
 

@@ -214,7 +214,7 @@ function stopWaveTimers() {
 }
 
 function verificarColisiones() {
-  gameState.allies.forEach(a => a.intentarCapturar());
+  [...gameState.allies].forEach(a => a.intentarCapturar());
 
   if (gameState.enemiesQueued.length === 0 && gameState.enemies.length === 0 && !gameState.isTransitionActive) {
     siguienteNivel();
@@ -295,6 +295,7 @@ function resetGameEngine() {
   gameState.lives = gameState.cheats.hardmode ? 0 : 3;
 
   gameState.currentWave = 1;
+  gameState.isPlaying = false;
   gameState.isGameOver = false;
 
   gameState.king.x = 2;
