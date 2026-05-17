@@ -267,6 +267,8 @@ function gameOver() {
   soundManager.stopFondo();
   soundManager.play("gameOver");
 
+  resetCheats();
+
   document.getElementById('final-score').textContent = gameState.score;
   document.getElementById('final-wave').textContent = gameState.currentWave;
 
