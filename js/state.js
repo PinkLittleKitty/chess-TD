@@ -17,6 +17,12 @@ let gameState = {
   isLeaderboardVisible: false,
   isSoundMuted: localStorage.getItem('chess_td_muted') === 'true',
 
+  fossboard: {
+    apiBase: 'https://fossboard.justneki.deno.net',
+    publicKey: 'pub-79e3ac58d31ea43b95d5',
+    privateKey: 'priv-64c77987d52bd4d8f007'
+  },
+
   king: {
     x: 2,
     y: 0,

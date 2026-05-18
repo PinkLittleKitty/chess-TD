@@ -105,7 +105,7 @@ function bindUIButtons() {
   }
 
   document.getElementById('btnResetLeaderboard').addEventListener('click', () => {
-    if (confirm("¿Estás seguro de borrar todo el historial de puntuaciones?")) {
+    if (confirm("¿Estás seguro de borrar tu historial local? (Las puntuaciones del servidor global no se verán afectadas)")) {
       localStorage.removeItem('chess_td_leaderboard');
       displayLeaderboardData();
     }

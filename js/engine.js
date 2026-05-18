@@ -383,38 +383,87 @@ function spawnExplosionParticles(gridX, gridY, color) {
   }
 }
 
-function addHighScore(name, scoreValue) {
-  let scores = [];
-  const raw = localStorage.getItem('chess_td_leaderboard');
-  if (raw) {
-    try {
-      scores = JSON.parse(raw);
-    } catch (e) {
-      scores = [];
-    }
+async function addHighScore(name, scoreValue) {
+  saveLocalScoreBackup(name, scoreValue);
+
+  try {
+    const url = `${gameState.fossboard.apiBase}/lb/${gameState.fossboard.privateKey}/add/${encodeURIComponent(name)}/${scoreValue}`;
+    await fetch(url);
+  } catch (err) {
+    console.error("Failed to submit score to FOSSBoard", err);
   }
 
-  scores.push({ name, score: scoreValue, date: new Date().toLocaleDateString() });
-
-  scores.sort((a, b) => b.score - a.score);
-  scores = scores.slice(0, 5);
-
-  localStorage.setItem('chess_td_leaderboard', JSON.stringify(scores));
   displayLeaderboardData();
 }
 
-function displayLeaderboardData() {
+async function displayLeaderboardData() {
   const tbody = document.getElementById('leaderboard-rows');
-  tbody.innerHTML = '';
+  if (!tbody) return;
 
+  tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-secondary); text-align:center;">Cargando...</td></tr>';
+
+  try {
+    const url = `${gameState.fossboard.apiBase}/lb/${gameState.fossboard.publicKey}/json`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("HTTP error " + response.status);
+
+    const data = await response.json();
+    const leaderboard = data.dreamlo?.leaderboard;
+    if (!leaderboard) {
+      showLocalBackupScores(tbody);
+      return;
+    }
+
+    const rawEntries = leaderboard.entry;
+    if (!rawEntries) {
+      tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-secondary); text-align:center;">Sin records aún</td></tr>';
+      return;
+    }
+
+    let entries = Array.isArray(rawEntries) ? rawEntries : [rawEntries];
+    entries.sort((a, b) => parseInt(b.score, 10) - parseInt(a.score, 10));
+    entries = entries.slice(0, 5);
+
+    tbody.innerHTML = '';
+    entries.forEach((entry, idx) => {
+      const tr = document.createElement('tr');
+      if (idx === 0) tr.className = 'highlight';
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${entry.name}</td>
+        <td>${entry.score}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Failed to fetch FOSSBoard scores, using local backup", err);
+    showLocalBackupScores(tbody);
+  }
+}
+
+function saveLocalScoreBackup(name, scoreValue) {
   let scores = [];
   const raw = localStorage.getItem('chess_td_leaderboard');
   if (raw) {
-    try {
-      scores = JSON.parse(raw);
-    } catch (e) {
-      scores = [];
-    }
+    try { scores = JSON.parse(raw); } catch (e) { scores = []; }
+  }
+  scores.push({ name, score: scoreValue });
+  scores.sort((a, b) => b.score - a.score);
+  scores = scores.slice(0, 5);
+  localStorage.setItem('chess_td_leaderboard', JSON.stringify(scores));
+}
+
+function showLocalBackupScores(tbody) {
+  tbody.innerHTML = '';
+  let scores = [];
+  const raw = localStorage.getItem('chess_td_leaderboard');
+  if (raw) {
+    try { scores = JSON.parse(raw); } catch (e) { scores = []; }
+  }
+
+  if (scores.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-secondary); text-align:center;">Sin records aún</td></tr>';
+    return;
   }
 
   scores.forEach((entry, idx) => {
